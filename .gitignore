@@ -1,0 +1,53 @@
+# ─────────────────────────────
+# SO / editores
+# ─────────────────────────────
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*.tmp
+.idea/
+.vscode/
+
+# ─────────────────────────────
+# Entornos / secretos
+# ─────────────────────────────
+.env
+.env.*
+!.env.example
+.envrc
+
+# ─────────────────────────────
+# Persistencia de contenedores
+# (NO versionar datos reales)
+# ─────────────────────────────
+data/
+!data/.gitkeep
+
+# ─────────────────────────────
+# Docker / Podman
+# ─────────────────────────────
+docker-compose.override.yml
+*.pid
+*.log
+
+# ─────────────────────────────
+# Supabase (estado local/CLI)
+# ─────────────────────────────
+.supabase/
+
+# ─────────────────────────────
+# n8n (ya cae dentro de /data)
+# ─────────────────────────────
+# (Nada extra: /data/n8n ya está ignorado)
+
+# ─────────────────────────────
+# Node / Python (por si agregas scripts)
+# ─────────────────────────────
+node_modules/
+npm-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+__pycache__/
+*.pyc
+venv/

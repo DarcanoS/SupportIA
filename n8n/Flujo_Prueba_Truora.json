@@ -1,0 +1,2862 @@
+{
+  "name": "Prueba_Truora_Supa",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -176,
+        864
+      ],
+      "id": "6d3a2d74-b3be-4602-ad91-1dd3f6ab14c6",
+      "name": "Telegram Trigger",
+      "webhookId": "59735fa1-cac0-4342-af84-36183520753f",
+      "credentials": {
+        "telegramApi": {
+          "id": "nrYRLGR3m0uRgMqT",
+          "name": "Bot Prueba n8n"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-4o-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        1040,
+        16
+      ],
+      "id": "ac62d264-c497-44dc-a2eb-a8bca5e306af",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "6RDutILFKuJL9WCe",
+          "name": "Truora API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Espera algo como: /crear juan Aplicativo: X; Módulo: Y; ...\nconst item = $input.first();\nconst raw = item.json?.message?.text ?? \"\";\nconst chatId = item.json?.message?.chat?.id;\n\nconst m = raw.match(/^\\/crear\\s+(\\S+)\\s+([\\s\\S]+)$/i);\n\nif (!m) {\n  return [\n    {\n      json: {\n        error: true,\n        chat_id: chatId,\n        mensaje_error:\n          \"Uso: /crear <usuario> <texto del ticket>. Ej: /crear juan Aplicativo:..., Módulo:...\",\n      },\n    },\n  ];\n}\n\nconst usuario = m[1];\nconst texto = m[2].trim();\n\nreturn [\n  {\n    json: {\n      error: false,\n      chat_id: chatId,\n      usuario,\n      texto,\n    },\n  },\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        592,
+        -176
+      ],
+      "id": "2b679e52-6c31-49dd-94a2-33f23e3069eb",
+      "name": "Parsear Entrada Crear"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Mensaje Falta Info - Crear').item.json.chat_id }}",
+        "text": "={{ $('Mensaje Falta Info - Crear').item.json.mensaje }}",
+        "additionalFields": {
+          "appendAttribution": false,
+          "parse_mode": "=None"
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        2944,
+        0
+      ],
+      "id": "72dcce58-bd73-4bce-91c8-ccd611ff3879",
+      "name": "Info Faltante",
+      "webhookId": "16a70400-99e8-4450-b1b8-b5250c9173af",
+      "credentials": {
+        "telegramApi": {
+          "id": "nrYRLGR3m0uRgMqT",
+          "name": "Bot Prueba n8n"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tickets",
+          "mode": "list",
+          "cachedResultName": "tickets"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "usuario": "={{ $('Error Parseo - Crear').item.json.usuario }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "usuario",
+              "displayName": "usuario",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "creado_en",
+              "displayName": "creado_en",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "actualizado_en",
+              "displayName": "actualizado_en",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1584,
+        -192
+      ],
+      "id": "b5fc8dec-b82f-40dc-a6d9-22dc5beaf10f",
+      "name": "Insert Ticket",
+      "credentials": {
+        "postgres": {
+          "id": "1s9udPgGiCWlUDxB",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "mensajes",
+          "mode": "list",
+          "cachedResultName": "mensajes"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "ticket_id": "={{ $json.id }}",
+            "autor": "={{ $json.usuario }}",
+            "mensaje": "={{ $('Error Parseo - Crear').item.json.texto }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "ticket_id",
+              "displayName": "ticket_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "autor",
+              "displayName": "autor",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "mensaje",
+              "displayName": "mensaje",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "creado_en",
+              "displayName": "creado_en",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1824,
+        -192
+      ],
+      "id": "5bc5c49a-240a-4861-b7e4-a3964dadcfc3",
+      "name": "Insert Mensaje",
+      "credentials": {
+        "postgres": {
+          "id": "1s9udPgGiCWlUDxB",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "validacion",
+          "mode": "list",
+          "cachedResultName": "validacion"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "ticket_id": "={{ $json.id }}",
+            "aplicativo_text": "={{ $('Parsear resultado IA - Crear').item.json.aplicativo }}",
+            "modulo_text": "={{ $('Parsear resultado IA - Crear').item.json.modulo }}",
+            "opcion_text": "={{ $('Parsear resultado IA - Crear').item.json.opcion }}",
+            "motivo_falla_text": "={{ $('Parsear resultado IA - Crear').item.json.motivo_falla }}",
+            "pasos_text": "={{ $('Parsear resultado IA - Crear').item.json.pasos }}",
+            "esperado_text": "={{ $('Parsear resultado IA - Crear').item.json.esperado }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "ticket_id",
+              "displayName": "ticket_id",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "actualizado_en",
+              "displayName": "actualizado_en",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "aplicativo_text",
+              "displayName": "aplicativo_text",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "modulo_text",
+              "displayName": "modulo_text",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "opcion_text",
+              "displayName": "opcion_text",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "motivo_falla_text",
+              "displayName": "motivo_falla_text",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "pasos_text",
+              "displayName": "pasos_text",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "esperado_text",
+              "displayName": "esperado_text",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "completo",
+              "displayName": "completo",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "boolean",
+              "canBeUsedToMatch": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1824,
+        48
+      ],
+      "id": "f41a44d4-dbbe-417d-a6e0-6fc5781b6ca4",
+      "name": "Insert Validacion",
+      "credentials": {
+        "postgres": {
+          "id": "1s9udPgGiCWlUDxB",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tickets",
+          "mode": "list",
+          "cachedResultName": "tickets"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "id": "={{ $json.ticket_id }}",
+            "estado": "por atender",
+            "actualizado_en": "={{ $now}}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "usuario",
+              "displayName": "usuario",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "creado_en",
+              "displayName": "creado_en",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "actualizado_en",
+              "displayName": "actualizado_en",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "estado",
+              "displayName": "estado",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        2288,
+        -208
+      ],
+      "id": "da6b3dd0-47fd-4176-8b5c-42048f68b265",
+      "name": "Update Estado Por Atender",
+      "credentials": {
+        "postgres": {
+          "id": "1s9udPgGiCWlUDxB",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tickets",
+          "mode": "list",
+          "cachedResultName": "tickets"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "id": "={{ $json.ticket_id }}",
+            "estado": "falta información",
+            "actualizado_en": "={{ $now }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "usuario",
+              "displayName": "usuario",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "creado_en",
+              "displayName": "creado_en",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "actualizado_en",
+              "displayName": "actualizado_en",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "estado",
+              "displayName": "estado",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        2288,
+        0
+      ],
+      "id": "0ce54afb-3e86-44c5-bb4a-ae2b35c83407",
+      "name": "Update Estado Falta Informacion",
+      "credentials": {
+        "postgres": {
+          "id": "1s9udPgGiCWlUDxB",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Error Parseo - Crear').item.json.chat_id }}",
+        "text": "={{ $json.mensaje }}",
+        "additionalFields": {
+          "appendAttribution": false,
+          "parse_mode": "=None"
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        2944,
+        -208
+      ],
+      "id": "43ffb3b9-b4e5-421e-b139-d31f3c13d26f",
+      "name": "Ticket Creado y Completo",
+      "webhookId": "9ec630a8-4341-409d-ba45-33d9af08a265",
+      "credentials": {
+        "telegramApi": {
+          "id": "nrYRLGR3m0uRgMqT",
+          "name": "Bot Prueba n8n"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "mensajes",
+          "mode": "list",
+          "cachedResultName": "mensajes"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "ticket_id": "={{ $json.ticket_id }}",
+            "mensaje": "={{ $json.mensaje }}",
+            "autor": "={{ $json.autor }}",
+            "creado_en": "={{ $now }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "ticket_id",
+              "displayName": "ticket_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "autor",
+              "displayName": "autor",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "mensaje",
+              "displayName": "mensaje",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "creado_en",
+              "displayName": "creado_en",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        2704,
+        -208
+      ],
+      "id": "d4bd22d9-bba8-416d-a6f9-f533cdd4b46d",
+      "name": "Insert Mensaje Sistema",
+      "credentials": {
+        "postgres": {
+          "id": "1s9udPgGiCWlUDxB",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "mensajes",
+          "mode": "list",
+          "cachedResultName": "mensajes"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "ticket_id": "={{ $json.ticket_id }}",
+            "mensaje": "={{ $json.mensaje }}",
+            "autor": "={{ $json.autor }}",
+            "creado_en": "={{ $now }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "ticket_id",
+              "displayName": "ticket_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "autor",
+              "displayName": "autor",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "mensaje",
+              "displayName": "mensaje",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "creado_en",
+              "displayName": "creado_en",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        2704,
+        0
+      ],
+      "id": "43104abd-4c99-4a30-b66b-7be4781e511d",
+      "name": "Insert Mensaje Sistema Faltante",
+      "credentials": {
+        "postgres": {
+          "id": "1s9udPgGiCWlUDxB",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.message.text }}",
+                    "rightValue": "/crear",
+                    "operator": {
+                      "type": "string",
+                      "operation": "startsWith"
+                    },
+                    "id": "3d0e2460-1400-4d7d-946a-8d3e46b94dec"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "crear"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "63c26068-d9d2-41a3-9cd7-3a198153ae55",
+                    "leftValue": "={{ $json.message.text }}",
+                    "rightValue": "/agregar",
+                    "operator": {
+                      "type": "string",
+                      "operation": "startsWith"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "agregar"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "27a409f5-57b4-438f-ae54-2dcabd3b8400",
+                    "leftValue": "={{ $json.message.text }}",
+                    "rightValue": "/listar",
+                    "operator": {
+                      "type": "string",
+                      "operation": "startsWith"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "listar"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "dfa3fcd1-a160-4169-b144-24c4960d1356",
+                    "leftValue": "={{ $json.message.text }}",
+                    "rightValue": "/detalle",
+                    "operator": {
+                      "type": "string",
+                      "operation": "startsWith"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "detalle"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "9663e41d-7de5-41d0-ba57-8cd2362ec903",
+                    "leftValue": "={{ $json.message.text }}",
+                    "rightValue": "/start",
+                    "operator": {
+                      "type": "string",
+                      "operation": "startsWith"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "inicio"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "641834b6-572a-48f7-a932-645557b9c3f1",
+                    "leftValue": "={{ $json.message.text }}",
+                    "rightValue": "/ayuda",
+                    "operator": {
+                      "type": "string",
+                      "operation": "startsWith"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "ayuda"
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": "extra"
+        }
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        160,
+        784
+      ],
+      "id": "1ed118e5-5db0-4f4a-9620-c154c3972f6d",
+      "name": "Switch Comandos"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $json.chat_id }}",
+        "text": "Creación del Ticket Fallida.\nEl comando debe tener el siguiente fromato: /crear <usuario que lo crea> <texto del ticket>.\nEj: /crear juan Aplicativo:..., Módulo:...",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1040,
+        192
+      ],
+      "id": "c8a6c898-6381-4c00-8061-3a3b070cc176",
+      "name": "Error formato de Crear",
+      "webhookId": "52234b1d-1c69-4ab5-8a8d-085faea5174c",
+      "credentials": {
+        "telegramApi": {
+          "id": "nrYRLGR3m0uRgMqT",
+          "name": "Bot Prueba n8n"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $json.message.chat.id }}",
+        "text": "El mensaje no contiene níngun comando en especifico.",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        576,
+        1632
+      ],
+      "id": "622470a6-59a0-484e-942b-52578174bd47",
+      "name": "Error ningún Comando",
+      "webhookId": "e61c7c83-53af-4659-a39d-0e746f5cecf3",
+      "credentials": {
+        "telegramApi": {
+          "id": "nrYRLGR3m0uRgMqT",
+          "name": "Bot Prueba n8n"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Espera: /agregar <id> <texto>\nconst raw = $input.first().json.message.text ?? \"\";\nconst chatId = $input.first().json.message.chat.id;\n\nconst m = raw.match(/^\\/agregar\\s+(\\d+)\\s+([\\s\\S]+)$/i);\n\nif (!m) {\n  return [{\n    json: {\n      error: true,\n      chat_id: chatId,\n      mensaje_error: \"Uso: /agregar <id> <texto>. Ej: /agregar 12 Agrego los pasos y el esperado...\"\n    }\n  }];\n}\nreturn [{\n  json: {\n    error: false,\n    chat_id: chatId,\n    ticket_id: Number(m[1]),\n    texto: m[2].trim()\n  }\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        592,
+        400
+      ],
+      "id": "9de28b6a-eed7-45f2-b5de-d9b8e11dc3fc",
+      "name": "Parsear Comando Agregar"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "dee18cc9-864c-48ea-9e8f-a7356b932774",
+              "leftValue": "={{ $json.error }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "false",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        800,
+        400
+      ],
+      "id": "0cc2d7d4-6357-4ec4-9140-559e46148d13",
+      "name": "Error Parseo Agregar"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4o",
+          "mode": "list",
+          "cachedResultName": "gpt-4o"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        1776,
+        560
+      ],
+      "id": "22294539-742a-4c20-ab19-9752c6357526",
+      "name": "OpenAI Chat Model1",
+      "credentials": {
+        "openAiApi": {
+          "id": "6RDutILFKuJL9WCe",
+          "name": "Truora API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Soporta: string JSON, objeto JSON y objeto envuelto en { output: {...} }\n// Además procesa múltiples items si llegan en batch.\n\nconst items = $input.all().map((item) => {\n  let out = item.json?.output ?? item.json; // si viene en {output: {...}} usa eso\n\n  // Si viene como string → parsea\n  if (typeof out === 'string') {\n    try { out = JSON.parse(out); } \n    catch (e) { throw new Error('IA no devolvió JSON válido: ' + out); }\n  }\n\n  // Si aún está envuelto: { output: {...} }\n  if (out && typeof out === 'object' && out.output && typeof out.output === 'object') {\n    out = out.output;\n  }\n\n  if (!out || typeof out !== 'object') {\n    throw new Error('Respuesta de IA vacía o con formato no soportado');\n  }\n\n  // Normaliza campos esperados\n  if (!Array.isArray(out.faltantes)) out.faltantes = [];\n  out.completo = !!out.completo;\n\n  return { json: out };\n});\n\nreturn items;\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2128,
+        368
+      ],
+      "id": "cdd49a3f-ccae-46ab-a9c9-a307082b080f",
+      "name": "Parsear resultados IA - Agregar"
+    },
+    {
+      "parameters": {
+        "operation": "upsert",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "validacion",
+          "mode": "list",
+          "cachedResultName": "validacion"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "ticket_id": "={{ $('Query Info Ticket').item.json.id_ticket }}",
+            "actualizado_en": "={{ $now }}",
+            "aplicativo_text": "={{ $json.aplicativo }}",
+            "modulo_text": "={{ $json.modulo }}",
+            "opcion_text": "={{ $json.opcion }}",
+            "motivo_falla_text": "={{ $json.motivo_falla }}",
+            "pasos_text": "={{ $json.pasos }}",
+            "esperado_text": "={{ $json.esperado }}"
+          },
+          "matchingColumns": [
+            "ticket_id"
+          ],
+          "schema": [
+            {
+              "id": "ticket_id",
+              "displayName": "ticket_id",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "actualizado_en",
+              "displayName": "actualizado_en",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "aplicativo_text",
+              "displayName": "aplicativo_text",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "modulo_text",
+              "displayName": "modulo_text",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "opcion_text",
+              "displayName": "opcion_text",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "motivo_falla_text",
+              "displayName": "motivo_falla_text",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "pasos_text",
+              "displayName": "pasos_text",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "esperado_text",
+              "displayName": "esperado_text",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "completo",
+              "displayName": "completo",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "boolean",
+              "canBeUsedToMatch": false,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        2336,
+        368
+      ],
+      "id": "adf31e78-b69a-4edd-9097-e3c71d2ef078",
+      "name": "Update validaciones - Agregar",
+      "credentials": {
+        "postgres": {
+          "id": "1s9udPgGiCWlUDxB",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tickets",
+          "mode": "list",
+          "cachedResultName": "tickets"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "id": "={{ $json.ticket_id }}",
+            "estado": "por atender",
+            "actualizado_en": "={{ $now}}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "usuario",
+              "displayName": "usuario",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "creado_en",
+              "displayName": "creado_en",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "actualizado_en",
+              "displayName": "actualizado_en",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "estado",
+              "displayName": "estado",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        2816,
+        352
+      ],
+      "id": "a3fa94fd-ddf2-469d-91a3-1c9e7fe4ea7a",
+      "name": "Update Estado Por Atender - Agregar",
+      "credentials": {
+        "postgres": {
+          "id": "1s9udPgGiCWlUDxB",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const datos =$('Update validaciones - Agregar').first().json;\nconst ticketId = $input.first().json.id;\nconst chatId = $('Error Parseo Agregar').first().json.chat_id;\nconst estado = $input.first().json.estado;\n\nconst textoMensaje = `Ticket recibido y completo. ID: ${ticketId}. ` +\n  `En estado: ${estado}. \\n` +\n  `Resumen: \\n` +\n  `• Aplicativo: ${datos.aplicativo_text}. \\n` +\n  `• Módulo: ${datos.modulo_text}. \\n` +\n  `• Opción: ${datos.opcion_text}. \\n` +\n  `• Falla: ${datos.motivo_falla_text}. \\n` +\n  `• Pasos: ${datos.pasos_text}. \\n` +\n  `• Esperado: ${datos.esperado_text}.`;\n\nreturn [{\n  json: {\n    ticket_id: ticketId,\n    autor: \"sistema\",\n    mensaje: textoMensaje,\n    chat_id: chatId\n  }\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3008,
+        352
+      ],
+      "id": "03beed63-3581-46a6-b975-72b63c248dfc",
+      "name": "Mensaje Por Antender - Agregar"
+    },
+    {
+      "parameters": {
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "mensajes",
+          "mode": "list",
+          "cachedResultName": "mensajes"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "ticket_id": "={{ $json.ticket_id }}",
+            "mensaje": "={{ $json.mensaje }}",
+            "autor": "={{ $json.autor }}",
+            "creado_en": "={{ $now }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "ticket_id",
+              "displayName": "ticket_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "autor",
+              "displayName": "autor",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "mensaje",
+              "displayName": "mensaje",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "creado_en",
+              "displayName": "creado_en",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        3216,
+        352
+      ],
+      "id": "0fee1057-8402-4ef3-b104-19a5c7cff418",
+      "name": "Insert Mensaje Sistema - Agregar",
+      "credentials": {
+        "postgres": {
+          "id": "1s9udPgGiCWlUDxB",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Mensaje Por Antender - Agregar').item.json.chat_id }}",
+        "text": "={{ $json.mensaje }}",
+        "additionalFields": {
+          "appendAttribution": false,
+          "parse_mode": "=None"
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        3440,
+        352
+      ],
+      "id": "d709e129-b30a-4071-9bb9-53801fcc14db",
+      "name": "Ticket Creado y Completo - Agregar",
+      "webhookId": "9ec630a8-4341-409d-ba45-33d9af08a265",
+      "credentials": {
+        "telegramApi": {
+          "id": "nrYRLGR3m0uRgMqT",
+          "name": "Bot Prueba n8n"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tickets",
+          "mode": "list",
+          "cachedResultName": "tickets"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "id": "={{ $json.ticket_id }}",
+            "estado": "falta información",
+            "actualizado_en": "={{ $now }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "usuario",
+              "displayName": "usuario",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "creado_en",
+              "displayName": "creado_en",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "actualizado_en",
+              "displayName": "actualizado_en",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "estado",
+              "displayName": "estado",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        2816,
+        544
+      ],
+      "id": "9714a324-7807-4d6d-a375-e192cb69ba03",
+      "name": "Update Estado Falta Informacion - Agregar",
+      "credentials": {
+        "postgres": {
+          "id": "1s9udPgGiCWlUDxB",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const faltan = $('Parsear resultados IA - Agregar').first().json.faltantes;\nconst solicitud =$('Parsear resultados IA - Agregar').first().json.solicitud;\nconst ticketId = $input.first().json.id;\nconst chatId = $('Error Parseo Agregar').first().json.chat_id;\nconst estado = $input.first().json.estado;\n\nconst textoMensaje = `Se ha agregado el mensaje al ticket ID: ${ticketId}.` +\n  `En estado:${estado} \\n` +\n  `Falta información para completar el ticket. ` +\n  `Campos faltantes: ${faltan.join(\", \")}. \\n\\n` +\n  `${solicitud}\\n\\n` +\n  `Para agregar más datos, usar: /agregar <id> <texto con la info faltante>`;\n\nreturn [{\n  json: {\n    ticket_id: ticketId,\n    autor: \"sistema\",\n    mensaje: textoMensaje,\n    chat_id: chatId\n  }\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3008,
+        544
+      ],
+      "id": "da97ef6d-e7e4-4ccf-a7be-43e648d7f0d2",
+      "name": "Mensaje Falta Info - Agregar"
+    },
+    {
+      "parameters": {
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "mensajes",
+          "mode": "list",
+          "cachedResultName": "mensajes"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "ticket_id": "={{ $json.ticket_id }}",
+            "mensaje": "={{ $json.mensaje }}",
+            "autor": "={{ $json.autor }}",
+            "creado_en": "={{ $now }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "ticket_id",
+              "displayName": "ticket_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "autor",
+              "displayName": "autor",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "mensaje",
+              "displayName": "mensaje",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "creado_en",
+              "displayName": "creado_en",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        3216,
+        544
+      ],
+      "id": "9ffc3de2-5347-470f-b4aa-6fac908d444b",
+      "name": "Insert Mensaje Sistema Faltante - Agregar",
+      "credentials": {
+        "postgres": {
+          "id": "1s9udPgGiCWlUDxB",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Mensaje Falta Info - Agregar').item.json.chat_id }}",
+        "text": "={{ $('Mensaje Falta Info - Agregar').item.json.mensaje }}",
+        "additionalFields": {
+          "appendAttribution": false,
+          "parse_mode": "=None"
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        3440,
+        544
+      ],
+      "id": "d7070a18-34aa-44bd-b937-0824bdea7d7a",
+      "name": "Info Faltante - Agregar",
+      "webhookId": "16a70400-99e8-4450-b1b8-b5250c9173af",
+      "credentials": {
+        "telegramApi": {
+          "id": "nrYRLGR3m0uRgMqT",
+          "name": "Bot Prueba n8n"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "5408a4ed-a9bc-499d-84d5-1d22fc473eb2",
+              "leftValue": "={{ $json.error }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "false",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        816,
+        -176
+      ],
+      "id": "fa8c026e-1ba6-4edd-8d10-b32cae9b90f6",
+      "name": "Error Parseo - Crear"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Texto del ticket:\n{{$json[\"texto\"]}}\n\nExtrae y valida según las reglas, responde SOLO el JSON.\n",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "Eres un asistente que valida tickets de soporte en español.\nDebes LEER texto libre y extraer estos campos:\n- aplicativo\n- modulo\n- opcion\n- motivo_falla (por qué es falla)\n- pasos (cómo se llegó al resultado)\n- esperado (qué se espera en lugar del fallo)\n\nReglas especiales sobre ADJUNTOS (no leas archivos, solo el texto):\n- Si el usuario menciona que adjunta o agrega un VIDEO/IMAGEN/CAPTURA/Screenshot con los PASOS, considera el campo \"pasos\" como presente y rellénalo con el texto estándar: \"[Adjunto: video con pasos]\" o \"[Adjunto: imagen con pasos]\" según corresponda.\n- Si el usuario menciona que adjunta o agrega evidencia del ERROR (video/imagen/captura), considera \"motivo_falla\" como presente y rellénalo con el texto estándar: \"[Adjunto: video con evidencia del error]\" o \"[Adjunto: imagen con evidencia del error]\".\n- No inventes contenido de los adjuntos; solo registra que existen con la nota estándar.\n- Estas reglas solo marcan \"pasos\" y/o \"motivo_falla\" como presentes. Los demás campos siguen igual.\n\nDevuelve SIEMPRE un JSON ESTRICTO:\n{\n  \"aplicativo\": \"...\",\n  \"modulo\": \"...\",\n  \"opcion\": \"...\",\n  \"motivo_falla\": \"...\",\n  \"pasos\": \"...\",\n  \"esperado\": \"...\",\n  \"adjuntos_detectados\": [\"video_pasos\",\"imagen_pasos\",\"video_error\",\"imagen_error\"], \n  \"completo\": boolean,\n  \"faltantes\": [\"...\"],\n  \"solicitud\": \"mensaje amable pidiendo SOLO lo que falta en formato claro\"\n}\n\nReglas:\n- Si un campo no aparece explícito y no está cubierto por las reglas de adjuntos, déjalo vacío \"\".\n- \"adjuntos_detectados\" es una lista informativa; incluye solo los tipos aplicables según el texto (usa los literales indicados arriba).\n- \"completo\" = true solo si TODOS los campos de texto (\"aplicativo\",\"modulo\",\"opcion\",\"motivo_falla\",\"pasos\",\"esperado\") tienen contenido claro o fueron cubiertos con las notas estándar por adjuntos.\n- \"faltantes\" lista los nombres exactos de los campos de texto vacíos (excluye los que quedaron cubiertos por adjuntos).\n- \"solicitud\" debe ser corta (2–4 líneas) y pedir SOLO lo que falta.\n- No incluyas texto fuera del JSON.\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        1040,
+        -192
+      ],
+      "id": "ef0209c7-ef9f-48f8-86a4-5eda0ba624e2",
+      "name": "Validar Ticket Nuevo"
+    },
+    {
+      "parameters": {
+        "jsCode": "const raw = $input.first().json.output  || \"\";\nlet parsed;\ntry { parsed = JSON.parse(raw); } catch(e) {\n  throw new Error(\"La IA no devolvió JSON válido. Respuesta: \" + raw);\n}\nreturn [parsed];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1360,
+        -192
+      ],
+      "id": "99e60912-58a0-46c0-baab-c8209037bcd8",
+      "name": "Parsear resultado IA - Crear"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "1ce17f17-09cf-4ff3-a8c7-d17571a6be75",
+              "leftValue": "={{ $('Parsear resultado IA - Crear').item.json.completo }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        2064,
+        -192
+      ],
+      "id": "a24f45cd-8b4e-44f8-b000-2d23422f65f5",
+      "name": "If Completo"
+    },
+    {
+      "parameters": {
+        "jsCode": "const datos = $('Parsear resultado IA - Crear').first().json;\nconst ticketId = $('Insert Ticket').first().json.id;\nconst chatId = $('Telegram Trigger').first().json.message.chat.id;\nconst estado = $input.first().json.estado;\n\nconst textoMensaje = `Ticket recibido y completo. ID: ${ticketId}. ` +\n  `En estado: ${estado}. \\n` +\n  `Resumen: \\n` +\n  `• Aplicativo: ${datos.aplicativo}. \\n` +\n  `• Módulo: ${datos.modulo}. \\n` +\n  `• Opción: ${datos.opcion}. \\n` +\n  `• Falla: ${datos.motivo_falla}. \\n` +\n  `• Pasos: ${datos.pasos}. \\n` +\n  `• Esperado: ${datos.esperado}.`;\n\nreturn [{\n  json: {\n    ticket_id: ticketId,\n    autor: \"sistema\",\n    mensaje: textoMensaje,\n    chat_id: chatId\n  }\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2496,
+        -208
+      ],
+      "id": "d0ae0d09-0b46-4e28-8233-3e9ea21a69e7",
+      "name": "Mensaje Ticket Completo - Crear"
+    },
+    {
+      "parameters": {
+        "jsCode": "const faltan = $('Parsear resultado IA - Crear').first().json.faltantes;\nconst solicitud =$('Parsear resultado IA - Crear').first().json.solicitud;\nconst ticketId = $('Insert Ticket').first().json.id;\nconst chatId = $('Telegram Trigger').first().json.message.chat.id;\nconst estado = $input.first().json.estado;\n\nconst textoMensaje = `Se ha creado el ticket ID: ${ticketId}.` +\n  `En estado:${estado} \\n` +\n  `Falta información para completar el ticket. ` +\n  `Campos faltantes: ${faltan.join(\", \")}. \\n\\n` +\n  `${solicitud}\\n\\n` +\n  `Para agregar más datos, usar: /agregar <id> <texto con la info faltante>`;\n\nreturn [{\n  json: {\n    ticket_id: ticketId,\n    autor: \"sistema\",\n    mensaje: textoMensaje,\n    chat_id: chatId\n  }\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2496,
+        0
+      ],
+      "id": "b2a6a483-a1d1-4817-b637-d0b7af6a6c33",
+      "name": "Mensaje Falta Info - Crear"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "select t.id as id_ticket, t.estado, v.completo, t.usuario,\n       v.aplicativo_text, v.modulo_text, v.opcion_text,\n       v.motivo_falla_text, v.pasos_text, v.esperado_text\nfrom tickets t\nleft join validacion v on v.ticket_id = t.id\nwhere t.id = {{ $('Parsear Comando Agregar').item.json.ticket_id }};\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1040,
+        384
+      ],
+      "id": "ef220a42-1db9-4c31-ae32-4396eea0e3f1",
+      "name": "Query Info Ticket",
+      "credentials": {
+        "postgres": {
+          "id": "1s9udPgGiCWlUDxB",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $json.chat_id }}",
+        "text": "Error al agregar el mensaje al Ticket.\nEl comando debe tener el siguiente formato: /agregar <id del ticket> <texto con la info faltante>.\nEj: /agregar 1 La información faltante es...",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1040,
+        576
+      ],
+      "id": "ffd82cc3-039f-41c1-a236-8f1a7d8f67d5",
+      "name": "Error formato de Agregar",
+      "webhookId": "811ded8e-83cb-4436-8906-5c7941f5b51a",
+      "credentials": {
+        "telegramApi": {
+          "id": "nrYRLGR3m0uRgMqT",
+          "name": "Bot Prueba n8n"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "mensajes",
+          "mode": "list",
+          "cachedResultName": "mensajes"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "ticket_id": "={{ $json.id_ticket }}",
+            "autor": "={{ $json.usuario }}",
+            "mensaje": "={{ $('Error Parseo Agregar').item.json.texto }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "ticket_id",
+              "displayName": "ticket_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "autor",
+              "displayName": "autor",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "mensaje",
+              "displayName": "mensaje",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "creado_en",
+              "displayName": "creado_en",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1296,
+        576
+      ],
+      "id": "682d34df-5280-4825-980e-54549a71ca3b",
+      "name": "Insert Mensaje Nuevo",
+      "credentials": {
+        "postgres": {
+          "id": "1s9udPgGiCWlUDxB",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Previo:\naplicativo_text: \"{{ $json.aplicativo_text }}\"\nmodulo_text: \"{{ $json.modulo_text }}\"\nopcion_text: \"{{ $json.opcion_text }}\"\nmotivo_falla_text: \"{{ $json.motivo_falla_text }}\"\npasos_text: \"{{ $json.pasos_text }}\"\nesperado_text: \"{{ $json.esperado_text }}\"\n\nMensaje nuevo:\n\"{{ $('Error Parseo Agregar').item.json.texto }}\"\n",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "Eres un asistente de soporte. Debes MERGEAR información de un ticket.\n\nEntrada:\n1) Campos previos (pueden venir vacíos o null):\n- aplicativo_text\n- modulo_text\n- opcion_text\n- motivo_falla_text\n- pasos_text\n- esperado_text\n\n2) Mensaje nuevo del usuario (texto libre).\n\nObjetivo:\n- Extrae del mensaje nuevo valores específicos para esos 6 campos de texto.\n- Reglas de adjuntos (no leas archivos, solo el texto):\n  * Si el nuevo mensaje menciona que adjunta o agrega un VIDEO/IMAGEN/CAPTURA/Screenshot con los PASOS, considera \"pasos\" como presente y rellénalo con la nota estándar: \"[Adjunto: video con pasos]\" o \"[Adjunto: imagen con pasos]\".\n  * Si menciona evidencia del ERROR (video/imagen/captura), considera \"motivo_falla\" como presente y rellénalo con: \"[Adjunto: video con evidencia del error]\" o \"[Adjunto: imagen con evidencia del error]\".\n  * No inventes contenido de los adjuntos; solo registra que existen con la nota estándar.\n- Fusión:\n  * Si un campo previo está vacío y el nuevo trae valor → úsalo.\n  * Si el previo YA tiene valor y el nuevo aporta un valor MÁS ESPECÍFICO o corrige, reemplázalo.\n  * Si no estás seguro, conserva el previo.\n\nDevuelve SOLO JSON estricto:\n{\n  \"aplicativo\": \"...\",\n  \"modulo\": \"...\",\n  \"opcion\": \"...\",\n  \"motivo_falla\": \"...\",\n  \"pasos\": \"...\",\n  \"esperado\": \"...\",\n  \"adjuntos_detectados\": [\"video_pasos\",\"imagen_pasos\",\"video_error\",\"imagen_error\"],\n  \"faltantes\": [\"...\"],      // solo los campos de texto que aún falten\n  \"completo\": boolean,\n  \"solicitud\": \"mensaje breve pidiendo SOLO lo que falta\",\n  \"cambios\": [\"aplicativo\",\"...\"] // campos que cambiaste respecto a lo previo\n}\n\nReglas:\n- \"adjuntos_detectados\" es informativo para la respuesta al usuario.\n- \"completo\" = true solo si TODOS los campos de texto quedan con contenido claro o marcados con la nota estándar por adjuntos.\n- No incluyas nada fuera del JSON.\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        1808,
+        368
+      ],
+      "id": "96be2cbf-1cee-4b47-b306-8a4278438c1d",
+      "name": "Validar Ticket y Mensaje Nuevo"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "26662878-3105-42ea-bbe5-26a4162d0a44",
+              "leftValue": "={{ $('Parsear resultados IA - Agregar').item.json.completo }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        2544,
+        368
+      ],
+      "id": "80c579f2-a9a1-4223-8c86-41fbfdbc2dae",
+      "name": "If Completo - Agregar"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "-- Trae todos los tickets con los primeros 10 caracteres del PRIMER mensaje\nselect\n  t.id,\n  t.usuario,\n  t.estado,\n  coalesce(\n    (select substring(m.mensaje from 1 for 15)\n       from mensajes m\n      where m.ticket_id = t.id\n      order by m.creado_en asc\n      limit 1),\n    '' -- si el ticket aún no tiene mensajes\n  ) || '...' as snippet\nfrom tickets t\norder by t.id desc;\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        576,
+        784
+      ],
+      "id": "ba52960a-3894-4114-ab31-746b0b7b3086",
+      "name": "Query Listar",
+      "credentials": {
+        "postgres": {
+          "id": "1s9udPgGiCWlUDxB",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Espera un array de filas [{id, usuario, estado, snippet}, ...]\nconst rows = $input.all().map(i => i.json);\n\nif (rows.length === 0) {\n  return [{ json: { chat_id: $('Telegram Trigger').first().json.message.chat.id, text: \"No hay tickets creados.\" } }];\n}\n\nconst lines = rows.map(r =>\n  `#${r.id} | ${r.usuario} | ${r.estado} | \"${r.snippet}\"`\n);\nconst msg = `Tickets (${rows.length})\\n` +\n  `#   | Usuario | Estado | Inicio Mensaje\\n`+\n  lines.join(\"\\n\");\n\nreturn [{ json: { chat_id: $('Telegram Trigger').first().json.message.chat.id, text: msg } }];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        784,
+        784
+      ],
+      "id": "abb671a5-2e91-4706-9d52-8c0311ba8248",
+      "name": "Parsear Lista"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $json.chat_id }}",
+        "text": "={{ $json.text }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        992,
+        784
+      ],
+      "id": "90967d2d-7453-4afd-8132-4d453c81a150",
+      "name": "Lista",
+      "webhookId": "831a8213-c770-41bb-86fd-080a4dc9e976",
+      "credentials": {
+        "telegramApi": {
+          "id": "nrYRLGR3m0uRgMqT",
+          "name": "Bot Prueba n8n"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const raw = $input.first().json.message.text ?? \"\";\nconst chatId = $input.first().json?.message?.chat?.id;\nconst m = raw.match(/^\\/detalle\\s+(\\d+)$/i);\n\nif (!m) {\n  return [{\n    json: {\n      error: true,\n      chat_id: chatId,\n      text: \"Uso: /detalle <id>. Ej: /detalle 12\"\n    }\n  }];\n}\n\nreturn [{\n  json: { error: false, chat_id: chatId, ticket_id: Number(m[1]) }\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        576,
+        992
+      ],
+      "id": "172cfb81-20ad-47d4-9094-1ae08b443848",
+      "name": "Parserar Detalle"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "9a60a4de-ce20-4cb2-ad62-1441e841e1b3",
+              "leftValue": "={{ $json.error }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "false",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        784,
+        992
+      ],
+      "id": "6cad11f6-4c94-4aff-98a7-4750ebee1868",
+      "name": "If Error Parseo - Detalle"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "-- Trae header del ticket y TODOS sus mensajes en orden cronológico\nselect\n  t.id,\n  t.usuario as ticket_usuario,\n  t.estado,\n  t.creado_en,\n  m.autor,\n  m.mensaje,\n  m.creado_en as mensaje_creado_en\nfrom tickets t\nleft join mensajes m on m.ticket_id = t.id\nwhere t.id = {{ $json.ticket_id }}\norder by m.creado_en asc nulls last;\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1040,
+        976
+      ],
+      "id": "32a35b43-6791-49b6-b7b1-5c5ad7a28354",
+      "name": "Query Detalle",
+      "credentials": {
+        "postgres": {
+          "id": "1s9udPgGiCWlUDxB",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const rows = $input.all().map(i => i.json);\nconst chatId = $('Parserar Detalle').first().json.chat_id;\nconst ticket = $('Parserar Detalle').first().json.ticket_id;\n\nif (rows.length === 0) {\n  return [{ json: { chat_id: chatId, text: `No existe el ticket #${ticket}.` } }];\n}\n\n// Header (primera fila tiene el ticket)\nconst head = rows[0];\nconst fmt = (d) => {\n  try { return new Date(d).toISOString().replace('T',' ').slice(0,19); }\n  catch { return String(d ?? ''); }\n};\n\nlet header = `Ticket #${head.id}\\n` +\n             `Estado: ${head.estado}\\n` +\n             `Creado: ${fmt(head.creado_en)}\\n` +\n             `Usuario: ${head.ticket_usuario}\\n\\n` +\n             `Mensajes:\\n`;\n\n// Cuerpo: cada mensaje en una línea multilínea\nconst messageLines = rows\n  .filter(r => r.mensaje !== null && r.mensaje !== undefined)\n  .map(r => {\n    const quien = (r.autor || 'usuario').toUpperCase();\n    return `— ${quien} · ${fmt(r.mensaje_creado_en)}\\n${r.mensaje}`;\n  });\n\nconst fullText = header + (messageLines.length ? messageLines.join(\"\\n\\n\") : \"(sin mensajes)\");\n\n// Partir en trozos de <= 3800 chars para ir seguro\nconst chunks = [];\nconst max = 3800;\nfor (let i = 0; i < fullText.length; i += max) {\n  chunks.push(fullText.slice(i, i + max));\n}\n\n// Devolvemos múltiples items, uno por mensaje a enviar\nreturn chunks.map((text, idx) => ({\n  json: {\n    chat_id: chatId,\n    text: (chunks.length > 1 ? `(${idx+1}/${chunks.length})\\n` : \"\") + text\n  }\n}));\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1264,
+        976
+      ],
+      "id": "3b0bab38-db8b-4117-ae86-9c44443ed935",
+      "name": "Parsear Detalle"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $json.chat_id }}",
+        "text": "=Error al mostrar el detalle del Ticket.\nEl comando debe tener el siguiente formato: {{ $json.text }}",
+        "additionalFields": {
+          "appendAttribution": false,
+          "parse_mode": "=None"
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1040,
+        1136
+      ],
+      "id": "4550c3be-10ec-44f9-9b24-bbb137cbab98",
+      "name": "Error formato de Detalle",
+      "webhookId": "811ded8e-83cb-4436-8906-5c7941f5b51a",
+      "credentials": {
+        "telegramApi": {
+          "id": "nrYRLGR3m0uRgMqT",
+          "name": "Bot Prueba n8n"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const chatId = $input.first().json.message.chat.id;\n\nconst text = [\n  \"👋 *Bienvenido al Bot de Gestión de Tickets con IA*\",\n  \"Aquí podrás crear, actualizar y consultar tickets de soporte.\",\n  \"La IA validará si tu información es suficiente y te pedirá lo que falte.\",\n  \"\",\n  \"📌 *Comandos disponibles:*\",\n  \"\",\n  \"`/crear <usuario> <descripción>`\",\n  \"Crea un nuevo ticket. Ejemplo:\",\n  \"```\\n/crear juan Aplicativo: CRM; Módulo: Ventas; Opción: Cotizaciones; Motivo: error 500 al guardar; Pasos: ingresar, crear cotización, guardar; Esperado: se guarde sin error.\\n```\",\n  \"\",\n  \"`/agregar <id> <información>`\",\n  \"Agrega información faltante a un ticket. Ejemplo:\",\n  \"```\\n/agregar 12 Pasos: ingresar, crear cotización, guardar; Esperado: se guarde sin error.\\n```\",\n  \"\",\n  \"`/listar`\",\n  \"Muestra todos los tickets creados, con su estado y un resumen del primer mensaje.\",\n  \"\",\n  \"`/detalle <id>`\",\n  \"Muestra toda la info de un ticket, incluyendo mensajes y fechas. Ejemplo:\",\n  \"```\\n/detalle 12\\n```\"\n].join(\"\\n\");\n\nreturn [{\n  json: {\n    chat_id: chatId,\n    text\n  }\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        576,
+        1312
+      ],
+      "id": "7963c9c4-c334-4614-876d-97b2e6f34e0b",
+      "name": "Mensaje Ayuda"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $json.chat_id }}",
+        "text": "={{ $json.text }}",
+        "additionalFields": {
+          "appendAttribution": false,
+          "parse_mode": "=None"
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        784,
+        1312
+      ],
+      "id": "2d386431-c82c-4c61-ac69-002f7aef4292",
+      "name": "Mensaje Ayuda Telegram",
+      "webhookId": "f3cb0611-4223-4cf3-bf8e-2845df0c1d4a",
+      "credentials": {
+        "telegramApi": {
+          "id": "nrYRLGR3m0uRgMqT",
+          "name": "Bot Prueba n8n"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n  \"aplicativo\": \"Inversiones\",\n  \"modulo\": \"operaciones\",\n  \"opcion\": \"crear una operacion de adicion\",\n  \"motivo_falla\": \"genera un error\",\n  \"pasos\": \"Intento crear una operacion de adicion en el modulo de operaciones\",\n  \"esperado\": \"\",\n  \"faltantes\": [\"esperado\"],\n  \"completo\": false,\n  \"solicitud\": \"Por favor, describe qué resultado esperabas al crear la operacion.\",\n  \"cambios\": [\"aplicativo\", \"modulo\", \"opcion\", \"motivo_falla\", \"pasos\"]\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        1968,
+        560
+      ],
+      "id": "a4d525a0-5534-4a74-9085-05bc68c3429f",
+      "name": "Structured Output Parser"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "77583f2c-4d3c-4bbf-962b-9de170828c34",
+              "leftValue": "={{ $json.completo }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "false",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1536,
+        384
+      ],
+      "id": "f3c1c3e7-3aa5-48a3-927d-1995bf568dd2",
+      "name": "If Completo Ya Estaba - Agregar"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $json.chat_id }}",
+        "text": "={{ $json.text }}",
+        "additionalFields": {
+          "appendAttribution": false,
+          "parse_mode": "=None"
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1472,
+        976
+      ],
+      "id": "5fc6284e-e07f-44a5-b74b-3821bb5c6586",
+      "name": "Mensaje Detalle",
+      "webhookId": "e8553cb6-426c-4438-a905-b60050b9b07d",
+      "credentials": {
+        "telegramApi": {
+          "id": "nrYRLGR3m0uRgMqT",
+          "name": "Bot Prueba n8n"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n  \"aplicativo\": \"CRM\",\n  \"modulo\": \"Ventas\",\n  \"opcion\": \"Generar Cotización\",\n  \"motivo_falla\": \"error 500 al guardar\",\n  \"pasos\": \"Ingresar al módulo, crear una nueva cotización, intentar guardarla\",\n  \"esperado\": \"que se guarde sin mostrar errores\",\n  \"adjuntos_detectados\": [\"Adjunto: video con pasos\",\"Adjunto: imagenes con pasos\"],\n  \"completo\": true,\n  \"faltantes\": [],\n  \"solicitud\": \"\"\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        1216,
+        0
+      ],
+      "id": "c3660845-f982-4d1d-b050-e8ed7062232d",
+      "name": "Structured Output Parser1",
+      "disabled": true
+    }
+  ],
+  "pinData": {
+    "Telegram Trigger": [
+      {
+        "json": {
+          "update_id": 401511390,
+          "message": {
+            "message_id": 113,
+            "from": {
+              "id": 1006884385,
+              "is_bot": false,
+              "first_name": "Stivel",
+              "username": "StivelPP",
+              "language_code": "es"
+            },
+            "chat": {
+              "id": 1006884385,
+              "first_name": "Stivel",
+              "username": "StivelPP",
+              "type": "private"
+            },
+            "date": 1754961648,
+            "text": "/crear juan Aplicativo: CRM; Módulo: Ventas; Opción: Generar Cotización; Motivo: error 500 al guardar; Pasos: Ingresar al módulo, crear una nueva cotización, intentar guardarla; Esperado: que se guarde sin mostrar errores.",
+            "entities": [
+              {
+                "offset": 0,
+                "length": 6,
+                "type": "bot_command"
+              }
+            ]
+          }
+        }
+      }
+    ]
+  },
+  "connections": {
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "Switch Comandos",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Validar Ticket Nuevo",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parsear Entrada Crear": {
+      "main": [
+        [
+          {
+            "node": "Error Parseo - Crear",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insert Ticket": {
+      "main": [
+        [
+          {
+            "node": "Insert Mensaje",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Insert Validacion",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Estado Por Atender": {
+      "main": [
+        [
+          {
+            "node": "Mensaje Ticket Completo - Crear",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Estado Falta Informacion": {
+      "main": [
+        [
+          {
+            "node": "Mensaje Falta Info - Crear",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insert Mensaje Sistema": {
+      "main": [
+        [
+          {
+            "node": "Ticket Creado y Completo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insert Mensaje Sistema Faltante": {
+      "main": [
+        [
+          {
+            "node": "Info Faltante",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch Comandos": {
+      "main": [
+        [
+          {
+            "node": "Parsear Entrada Crear",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Parsear Comando Agregar",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Query Listar",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Parserar Detalle",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Mensaje Ayuda",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Mensaje Ayuda",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Error ningún Comando",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parsear Comando Agregar": {
+      "main": [
+        [
+          {
+            "node": "Error Parseo Agregar",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Error Parseo Agregar": {
+      "main": [
+        [
+          {
+            "node": "Query Info Ticket",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Error formato de Agregar",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Validar Ticket y Mensaje Nuevo",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parsear resultados IA - Agregar": {
+      "main": [
+        [
+          {
+            "node": "Update validaciones - Agregar",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update validaciones - Agregar": {
+      "main": [
+        [
+          {
+            "node": "If Completo - Agregar",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Estado Por Atender - Agregar": {
+      "main": [
+        [
+          {
+            "node": "Mensaje Por Antender - Agregar",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mensaje Por Antender - Agregar": {
+      "main": [
+        [
+          {
+            "node": "Insert Mensaje Sistema - Agregar",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insert Mensaje Sistema - Agregar": {
+      "main": [
+        [
+          {
+            "node": "Ticket Creado y Completo - Agregar",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Estado Falta Informacion - Agregar": {
+      "main": [
+        [
+          {
+            "node": "Mensaje Falta Info - Agregar",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mensaje Falta Info - Agregar": {
+      "main": [
+        [
+          {
+            "node": "Insert Mensaje Sistema Faltante - Agregar",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insert Mensaje Sistema Faltante - Agregar": {
+      "main": [
+        [
+          {
+            "node": "Info Faltante - Agregar",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Error Parseo - Crear": {
+      "main": [
+        [
+          {
+            "node": "Validar Ticket Nuevo",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Error formato de Crear",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validar Ticket Nuevo": {
+      "main": [
+        [
+          {
+            "node": "Parsear resultado IA - Crear",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parsear resultado IA - Crear": {
+      "main": [
+        [
+          {
+            "node": "Insert Ticket",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If Completo": {
+      "main": [
+        [
+          {
+            "node": "Update Estado Por Atender",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Update Estado Falta Informacion",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mensaje Ticket Completo - Crear": {
+      "main": [
+        [
+          {
+            "node": "Insert Mensaje Sistema",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mensaje Falta Info - Crear": {
+      "main": [
+        [
+          {
+            "node": "Insert Mensaje Sistema Faltante",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Query Info Ticket": {
+      "main": [
+        [
+          {
+            "node": "Insert Mensaje Nuevo",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "If Completo Ya Estaba - Agregar",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insert Mensaje Nuevo": {
+      "main": [
+        []
+      ]
+    },
+    "Validar Ticket y Mensaje Nuevo": {
+      "main": [
+        [
+          {
+            "node": "Parsear resultados IA - Agregar",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If Completo - Agregar": {
+      "main": [
+        [
+          {
+            "node": "Update Estado Por Atender - Agregar",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Update Estado Falta Informacion - Agregar",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Query Listar": {
+      "main": [
+        [
+          {
+            "node": "Parsear Lista",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parsear Lista": {
+      "main": [
+        [
+          {
+            "node": "Lista",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parserar Detalle": {
+      "main": [
+        [
+          {
+            "node": "If Error Parseo - Detalle",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If Error Parseo - Detalle": {
+      "main": [
+        [
+          {
+            "node": "Query Detalle",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Error formato de Detalle",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Query Detalle": {
+      "main": [
+        [
+          {
+            "node": "Parsear Detalle",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parsear Detalle": {
+      "main": [
+        [
+          {
+            "node": "Mensaje Detalle",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insert Mensaje": {
+      "main": [
+        [
+          {
+            "node": "If Completo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insert Validacion": {
+      "main": [
+        []
+      ]
+    },
+    "Mensaje Ayuda": {
+      "main": [
+        [
+          {
+            "node": "Mensaje Ayuda Telegram",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Validar Ticket y Mensaje Nuevo",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If Completo Ya Estaba - Agregar": {
+      "main": [
+        [
+          {
+            "node": "Validar Ticket y Mensaje Nuevo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser1": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Validar Ticket Nuevo",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "e3d62914-8c2e-44fa-8a96-3d2d077e929a",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "7c6cc96482e58af5df1c77f0f5b15140e0f4e367d29a7206705772d654eaf353"
+  },
+  "id": "7csmC3KcSIWzQZzw",
+  "tags": []
+}

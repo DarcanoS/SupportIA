@@ -1,65 +1,110 @@
-# Desafío IA
-Este es un proyecto para la implementación de un agente de IA para automatizar tareas en el area de soporte.
+# Desafío IA – Agente de Validación de Tickets
 
-## Objetivos
-Las funcionalidades que tiene el agente son:
-1. Validar que los tickets que ingresen contengan la información necesario para su atención. (Realizado)
-2. Resumir las actividades que hay que realizar con los tickets vigentes. (Funcionalidad no realizada.)
+Este proyecto implementa un **agente de IA** para automatizar tareas en el área de soporte, usando **n8n**, **PostgreSQL/Supabase** y **Telegram**.
+El agente revisa tickets entrantes, valida si contienen la información mínima necesaria para ser atendidos y solicita datos faltantes de manera automática.
 
 ---
 
-## Requisitos para ejecutar el proyecto
+## 🎯 Objetivos
 
-- Tener N8N, desde la versión más básica. Versión Web o Local.
-- Tener una base de datos de Postgres. (Supabase, etc.)
-- Tener Telegram.
+1. **Validar tickets automáticamente** para asegurar que incluyan:
 
-## Esquema de carpetas
+   * Aplicativo afectado
+   * Módulo o pantalla
+   * Opción específica
+   * Motivo de la falla
+   * Pasos para reproducirla
+   * Comportamiento esperado
+2. **(Futuro)** Resumir las actividades pendientes de los tickets vigentes.
+
+---
+
+## 📦 Requisitos
+
+* **n8n** (versión mínima: básica – Web o local)
+* **Base de datos PostgreSQL** (Supabase, Docker local, etc.)
+* **Bot de Telegram**
+* **Cuenta y API key de OpenAI** (u otro proveedor de IA compatible)
+
+---
+
+## 📂 Estructura del repositorio
+
 ```bash
 .
-├── docs                        #Carpeta general de documentación
-├── n8n                         #Carpeta de utilidades para n8n
-├── README.md
-├── database                    #Carpeta de utilidades para la base de datos
-
+├── database
+│   └── create_tables.sql         # Script para crear tablas necesarias
+├── docs
+│   ├── doc_bot.md                # Guía de uso del bot en Telegram
+│   └── doc_uso_ia.md             # Explicación del uso de IA en el proyecto
+├── n8n
+│   └── Flujo_Prueba_Truora.json  # Workflow para importar en n8n
+└── README.md
 ```
 
-## Como probar el proyecto 
+---
 
-Puedes ingresar en telgram al siguiente [Bot](https://web.telegram.org/k/#@n8npruebau606u4rb8a5ovignbot).
+## 🚀 Cómo probar el proyecto
 
-El te permitirá realizar las siguientes acciones:
- - Crear tickets
- - Agregar mensajes a tickets creados
- - Listar los tiockets y sus estados
- - Detallar un tickes completo
+Puedes usar el **bot de prueba** en Telegram:
+[Bot de Prueba](https://web.telegram.org/k/#@n8npruebau606u4rb8a5ovignbot)
 
-Si tienes duda de puedes usar el comando de "/ayuda".
+Comandos disponibles:
 
-Tambien encontraras la documentación más completa [aquí](https://github.com/DarcanoS/SupportIA/docs/doc_bot.md).
+* `/crear <usuario> <descripción>` → Crea un ticket nuevo.
+* `/agregar <id> <info>` → Agrega información a un ticket existente.
+* `/listar` → Lista todos los tickets con estado y resumen.
+* `/detalle <id>` → Muestra información completa del ticket.
 
-## Como ejecutar el proyecto
+Ejemplo de creación:
 
-1. En la carpeta n8n tienes el archivo .Json para importar en n8n. [Documentación oficial](https://docs.n8n.io/try-it-out/quickstart/):
-    
-    - En la pantalla principal "Create workflow".
-    - Adentro de la vista de edición, en la parte supeior derecha, en los 3 puntos, darle en "Import from File...".
+```bash
+/crear juan Aplicativo: CRM; Módulo: Ventas; Opción: Cotizaciones; Motivo: error 500 al guardar; Pasos: ingresar, crear cotización, guardar; Esperado: se guarde sin error.
+```
 
-2. Configurar las credenciales:
+📄 La guía completa de comandos está en [`docs/doc_bot.md`](docs/doc_bot.md)
 
-    - Telegram, el primer nodo que es el trigger, debes configurar el token de tu bot. Puedes encontrar información de como crear tu bot [aquí](https://www.youtube.com/watch?v=zZfyFjQR6qo&pp=ygUQdGVsZWdyYW0gY29uIG44bg%3D%3D).
-    - Para usar elAgente de IA, también debes configurar el token en el nodo OpenAI chat Model, que se desprende del nodo "Validar Ticket Nuevo" que tiene la imagen de un robot.
+---
 
-3. Configurar la base de datos.
+## ⚙️ Configuración del proyecto
 
-    - En la carpeta de database esta el sql para crear las tablas necesarias para tu base de datos.
-    - Puedes colocar los datos de tu base de datos. si deseas usar otra base de datos, puedes hacerlo.
+### 1. Importar el flujo en n8n
 
-Con estas configuraciones ya puedes iniciar el proyecto.
+1. Abrir n8n.
+2. Crear un nuevo flujo ("Create workflow").
+3. En el editor, ir a los **tres puntos** (arriba a la derecha) y seleccionar **Import from File…**.
+4. Importar `n8n/Flujo_Prueba_Truora.json`.
 
-### Como ejecutar el proyecto en local
-... Documentación no realizada.
+### 2. Configurar credenciales
 
-### Como use la IA para este proyecto
+* **Telegram**:
+  Configura el token de tu bot en el nodo **Telegram Trigger**.
+  [Cómo crear un bot de Telegram](https://www.youtube.com/watch?v=zZfyFjQR6qo&pp=ygUQdGVsZWdyYW0gY29uIG44bg%3D%3D)
+* **IA (OpenAI)**:
+  Configura la API Key en el nodo **OpenAI Chat Model** conectado a "Validar Ticket Nuevo".
 
-En la documentación explico como fue mi proceso del [uso de la IA](https://github.com/DarcanoS/SupportIA/docs/doc_uso_ia.md) para este proyecto.
+### 3. Configurar la base de datos
+
+* Ejecutar `database/create_tables.sql` en tu instancia PostgreSQL/Supabase.
+* Configurar credenciales de la base de datos en los nodos que interactúan con ella.
+
+---
+
+## 🧠 Uso de la IA en el proyecto
+
+La IA recibe el contenido del ticket y:
+
+1. Evalúa si cumple con la información mínima requerida.
+2. Si falta información, genera un mensaje claro solicitándola.
+3. Si está completo, marca el ticket como listo para atención.
+
+📄 El detalle del prompting y decisiones técnicas está en [`docs/doc_uso_ia.md`](docs/doc_uso_ia.md).
+
+---
+
+## 📌 Notas
+
+* Actualmente **no** incluye la guía de ejecución local de n8n (pendiente).
+* Futuras mejoras planteadas:
+
+  * Resumen de tickets pendientes.
